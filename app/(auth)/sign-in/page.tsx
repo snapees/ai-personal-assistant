@@ -8,11 +8,13 @@ import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useMutation } from "convex/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useContext } from "react";
 
 function Signin() {
   const CreateUser = useMutation(api.users.CreateUser);
-  const { user, setUSer } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
+  const router = useRouter();
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       if (typeof window !== undefined) {
@@ -29,7 +31,8 @@ function Signin() {
         picture: user.picture,
       });
       console.log("result--", result);
-      setUSer(result);
+      setUser(result);
+      router.replace("/ai-assistants");
     },
     onError: (errorResponse) => console.log(errorResponse),
   });
