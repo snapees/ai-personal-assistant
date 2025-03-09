@@ -4,9 +4,13 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AuthContext } from "@/context/AuthContext";
+import { api } from "@/convex/_generated/api";
 import AiAssistantsList from "@/services/AiAssistantsList";
+import { useMutation } from "convex/react";
+import { Loader2Icon } from "lucide-react";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
 export type ASSISTANT = {
   id: number;
@@ -20,6 +24,13 @@ export type ASSISTANT = {
 
 function AIAssistants() {
   const [selectedAssistant, setSelectedAssistant] = useState<ASSISTANT[]>([]);
+  const insertAssistants = useMutation(
+    api.userAiAssistants.InsertSelectedAssistants
+  );
+  const { user } = useContext(AuthContext);
+  // console.log("user-----------", user);
+  const [loading, setLoading] = useState(false);
+
   const onSelect = (assistant: ASSISTANT) => {
     const item = selectedAssistant.find(
       (item: ASSISTANT) => item.id === assistant.id
@@ -40,6 +51,16 @@ function AIAssistants() {
     return item ? true : false;
   };
 
+  const onClickContinue = async () => {
+    setLoading(true);
+    const result = await insertAssistants({
+      record: selectedAssistant,
+      uid: user?._id,
+    });
+    setLoading(false);
+    console.log(result);
+  };
+
   return (
     <div className="px-10 mt-20 md:px-28 lg:px-36 xl:px-48">
       <div className="flex justify-between items-center">
@@ -57,7 +78,14 @@ function AIAssistants() {
           </BlurFade>
         </div>
         {/* <RainbowButton>Continue</RainbowButton> */}
-        <Button disabled={selectedAssistant.length === 0}>Continue</Button>
+        <Button
+          className="cursor-pointer"
+          disabled={selectedAssistant.length === 0 || loading}
+          onClick={onClickContinue}
+        >
+          {loading && <Loader2Icon className="animate-spin" />}
+          Continue
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mt-5">
